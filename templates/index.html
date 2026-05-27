@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Translator — On-Prem AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hp-blue: #0096D6;
+            --hp-blue-dark: #006DA8;
+            --hp-blue-deep: #024AD8;
+            --hp-navy: #00234B;
+            --surface: #F7F9FC;
+            --surface-alt: #EEF2F8;
+            --border: #D8E0EC;
+            --text-primary: #0A1628;
+            --text-secondary: #4A5B73;
+            --text-muted: #8494A9;
+            --success: #00875A;
+            --success-light: #E8F5EF;
+            --error: #DE350B;
+            --error-light: #FFEBE6;
+            --warning-amber: #FF991F;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--hp-navy);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* ── Top Bar ── */
+        .top-bar {
+            background: rgba(0, 35, 75, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 150, 214, 0.2);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .hp-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .top-bar-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .top-bar-subtitle {
+            color: var(--hp-blue);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .health-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .health-badge.ok {
+            background: rgba(0, 135, 90, 0.15);
+            color: #4ADE80;
+            border: 1px solid rgba(0, 135, 90, 0.3);
+        }
+
+        .health-badge.err {
+            background: rgba(222, 53, 11, 0.15);
+            color: #FF6B6B;
+            border: 1px solid rgba(222, 53, 11, 0.3);
+        }
+
+        .health-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── Main Layout ── */
+        .main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -1.2px;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--hp-blue), #00C6FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .card-section {
+            padding: 32px;
+        }
+
+        .card-section + .card-section {
+            border-top: 1px solid var(--border);
+        }
+
+        .card-section-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        /* ── Dropzone ── */
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.drag-over {
+            border-color: var(--hp-blue);
+            background: rgba(0, 150, 214, 0.04);
+        }
+
+        .dropzone.has-file {
+            border-color: var(--success);
+            background: var(--success-light);
+            border-style: solid;
+        }
+
+        .dropzone-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: var(--surface-alt);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+
+        .dropzone:hover .dropzone-icon {
+            background: rgba(0, 150, 214, 0.1);
+        }
+
+        .dropzone.has-file .dropzone-icon {
+            background: rgba(0, 135, 90, 0.12);
+        }
+
+        .dropzone-icon svg {
+            width: 28px;
+            height: 28px;
+            color: var(--text-muted);
+            transition: color 0.25s;
+        }
+
+        .dropzone:hover .dropzone-icon svg {
+            color: var(--hp-blue);
+        }
+
+        .dropzone.has-file .dropzone-icon svg {
+            color: var(--success);
+        }
+
+        .dropzone-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .dropzone-text strong {
+            color: var(--hp-blue);
+            font-weight: 600;
+        }
+
+        .dropzone-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 135, 90, 0.2);
+        }
+
+        .dropzone.has-file .file-info { display: flex; }
+        .dropzone.has-file .dropzone-default { display: none; }
+
+        .file-info-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
+            text-align: left;
+        }
+
+        .file-info-size {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .file-info-remove {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            transition: color 0.2s;
+        }
+
+        .file-info-remove:hover { color: var(--error); }
+
+        input[type="file"] { display: none; }
+
+        /* ── Language Select ── */
+        .lang-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .lang-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .lang-group select {
+            width: 100%;
+            padding: 10px 36px 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-primary);
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A5B73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+            appearance: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .lang-group select:focus {
+            outline: none;
+            border-color: var(--hp-blue);
+            box-shadow: 0 0 0 3px rgba(0, 150, 214, 0.12);
+        }
+
+        .lang-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        /* ── Translate Button ── */
+        .translate-btn {
+            width: 100%;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--hp-blue), var(--hp-blue-dark));
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 150, 214, 0.3);
+        }
+
+        .translate-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 150, 214, 0.4);
+        }
+
+        .translate-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .translate-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ── Progress ── */
+        .progress-section {
+            display: none;
+        }
+
+        .progress-section.active { display: block; }
+
+        .progress-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .progress-pct {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--hp-blue);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-alt);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hp-blue), #00C6FF);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-detail {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Spinner ── */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        .translate-btn.loading .spinner { display: block; }
+        .translate-btn.loading .btn-text { display: none; }
+        .translate-btn.loading .btn-text-loading { display: inline; }
+        .btn-text-loading { display: none; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Result ── */
+        .result-section {
+            display: none;
+        }
+
+        .result-section.active { display: block; }
+
+        .result-card {
+            background: var(--success-light);
+            border: 1px solid rgba(0, 135, 90, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .result-card.error {
+            background: var(--error-light);
+            border-color: rgba(222, 53, 11, 0.2);
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            background: rgba(0, 135, 90, 0.12);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-card.error .result-icon {
+            background: rgba(222, 53, 11, 0.12);
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 4px;
+        }
+
+        .result-card.error .result-title {
+            color: var(--error);
+        }
+
+        .result-detail {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: #006B48;
+            transform: translateY(-1px);
+        }
+
+        .reset-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        /* ── Architecture Badge ── */
+        .arch-strip {
+            text-align: center;
+            margin-top: 40px;
+            padding: 16px;
+        }
+
+        .arch-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: rgba(0, 150, 214, 0.08);
+            border: 1px solid rgba(0, 150, 214, 0.15);
+            border-radius: 20px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .arch-badge svg {
+            color: var(--hp-blue);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 30px; }
+            .lang-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .lang-arrow {
+                transform: rotate(90deg);
+                padding: 0;
+            }
+            .result-stats { gap: 20px; }
+            .card-section { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <img src="/static/hp_logo.png" alt="HP" class="hp-logo">
+            <div>
+                <div class="top-bar-title">HP Powerpoint Translator</div>
+                <div class="top-bar-subtitle">ZGX Nano · On-Prem AI</div>
+            </div>
+        </div>
+        <div class="health-badge err" id="healthBadge">
+            <div class="health-dot"></div>
+            <span id="healthText">Checking...</span>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="hero">
+            <h1>Translate Presentations<br>with <span>On-Prem AI</span></h1>
+            <p>Upload a PowerPoint file, pick a target language, and download the translated deck. All processing stays on this device — your data never leaves the building.</p>
+        </div>
+
+        <div class="card">
+            <!-- Upload Section -->
+            <div class="card-section" id="uploadSection">
+                <div class="card-section-label">1 — Upload</div>
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+                    <div class="dropzone-default">
+                        <div class="dropzone-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m16 13-3.5 3.5L9 13"/><path d="M12.5 16.5V10"/></svg>
+                        </div>
+                        <div class="dropzone-text"><strong>Click to upload</strong> or drag and drop</div>
+                        <div class="dropzone-hint">.pptx files only</div>
+                    </div>
+                    <div class="file-info">
+                        <div class="dropzone-icon" style="margin: 0; width: 40px; height: 40px; min-width: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                        <div class="file-info-name" id="fileName"></div>
+                        <div class="file-info-size" id="fileSize"></div>
+                        <button class="file-info-remove" onclick="event.stopPropagation(); removeFile()" title="Remove file">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" accept=".pptx" onchange="handleFile(this.files[0])">
+            </div>
+
+            <!-- Language Section -->
+            <div class="card-section">
+                <div class="card-section-label">2 — Language</div>
+                <div class="lang-row">
+                    <div class="lang-group">
+                        <label for="sourceLang">From</label>
+                        <select id="sourceLang">
+                            <option value="en" selected>English</option>
+                            <option value="ar">Arabic</option>
+                            <option value="zh">Chinese (Simplified)</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="it">Italian</option>
+                            <option value="ja">Japanese</option>
+                            <option value="ko">Korean</option>
+                            <option value="pt">Portuguese (Brazil)</option>
+                            <option value="ru">Russian</option>
+                            <option value="es">Spanish</option>
+                        </select>
+                    </div>
+                    <div class="lang-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                    <div class="lang-group">
+                        <label for="targetLang">To</label>
+                        <select id="targetLang">
+                            <option value="fr" selected>French</option>
+                            <option value="es">Spanish</option>
+                            <option value="de">German</option>
+                            <option value="it">Italian</option>
+                            <option value="pt">Portuguese (Brazil)</option>
+                            <option value="pt-pt">Portuguese (Portugal)</option>
+                            <option value="ja">Japanese</option>
+                            <option value="ko">Korean</option>
+                            <option value="zh">Chinese (Simplified)</option>
+                            <option value="zh-tw">Chinese (Traditional)</option>
+                            <option value="ar">Arabic</option>
+                            <option value="hi">Hindi</option>
+                            <option value="ru">Russian</option>
+                            <option value="nl">Dutch</option>
+                            <option value="sv">Swedish</option>
+                            <option value="da">Danish</option>
+                            <option value="nb">Norwegian Bokmål</option>
+                            <option value="fi">Finnish</option>
+                            <option value="pl">Polish</option>
+                            <option value="cs">Czech</option>
+                            <option value="hu">Hungarian</option>
+                            <option value="ro">Romanian</option>
+                            <option value="tr">Turkish</option>
+                            <option value="th">Thai</option>
+                            <option value="vi">Vietnamese</option>
+                            <option value="id">Indonesian</option>
+                            <option value="ms">Malay</option>
+                            <option value="uk">Ukrainian</option>
+                            <option value="hr">Croatian</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translate Button -->
+            <div class="card-section">
+                <button class="translate-btn" id="translateBtn" onclick="startTranslation()" disabled>
+                    <span class="btn-text">Translate Presentation</span>
+                    <span class="btn-text-loading">Uploading...</span>
+                    <div class="spinner"></div>
+                </button>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="card-section progress-section" id="progressSection">
+                <div class="card-section-label">Processing</div>
+                <div class="progress-header">
+                    <div class="progress-label" id="progressLabel">Translating slides...</div>
+                    <div class="progress-pct" id="progressPct">0%</div>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <div class="progress-detail" id="progressDetail">Preparing...</div>
+            </div>
+
+            <!-- Result Section -->
+            <div class="card-section result-section" id="resultSection">
+                <div class="result-card" id="resultCard">
+                    <div class="result-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00875A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="result-title" id="resultTitle">Translation Complete</div>
+                    <div class="result-detail" id="resultDetail"></div>
+                    <div class="result-stats" id="resultStats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="statSlides">0</div>
+                            <div class="stat-label">Slides</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statTexts">0</div>
+                            <div class="stat-label">Text Blocks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statTime">0s</div>
+                            <div class="stat-label">Elapsed</div>
+                        </div>
+                    </div>
+                    <a class="download-btn" id="downloadBtn" href="#" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download Translated PPT
+                    </a>
+                    <br>
+                    <button class="reset-btn" onclick="resetUI()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        Translate Another
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Badge -->
+        <div class="arch-strip">
+            <div class="arch-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                100% On-Prem · Zero Cloud · Data Never Leaves This Device
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Config ──
+        const API_BASE = window.location.origin;
+        let selectedFile = null;
+        let currentJobId = null;
+        let pollInterval = null;
+
+        // ── Dropzone ──
+        const dropzone = document.getElementById('dropzone');
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('drag-over');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('drag-over');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.pptx')) {
+                alert('Please upload a .pptx file');
+                return;
+            }
+            selectedFile = file;
+            dropzone.classList.add('has-file');
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatSize(file.size);
+            document.getElementById('translateBtn').disabled = false;
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            dropzone.classList.remove('has-file');
+            document.getElementById('fileInput').value = '';
+            document.getElementById('translateBtn').disabled = true;
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // ── Translation ──
+        async function startTranslation() {
+            if (!selectedFile) return;
+
+            const btn = document.getElementById('translateBtn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+
+            // Hide result, show progress
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('progressSection').classList.add('active');
+            updateProgress(0, 'Uploading presentation...', 'Sending file to server...');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('target_lang', document.getElementById('targetLang').value);
+            formData.append('source_lang', document.getElementById('sourceLang').value);
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/translate`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.detail || 'Upload failed');
+                }
+
+                const data = await resp.json();
+                currentJobId = data.job_id;
+
+                updateProgress(5, 'Processing...', 'Extracting text from slides...');
+
+                // Start polling
+                pollInterval = setInterval(pollStatus, 1500);
+
+            } catch (err) {
+                showError(err.message);
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        async function pollStatus() {
+            if (!currentJobId) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/status/${currentJobId}`);
+                const job = await resp.json();
+
+                if (job.status === 'processing') {
+                    const total = job.total_slides || 1;
+                    const done = job.translated_slides || 0;
+                    const pct = Math.max(5, Math.round((done / total) * 90) + 5);
+                    const detail = job.total_texts > 0
+                        ? `Slide ${done}/${total} · ${job.translated_texts}/${job.total_texts} text blocks`
+                        : `Slide ${done}/${total}`;
+                    updateProgress(pct, 'Translating slides...', detail);
+
+                } else if (job.status === 'complete') {
+                    clearInterval(pollInterval);
+                    updateProgress(100, 'Complete!', '');
+                    setTimeout(() => showSuccess(job), 400);
+
+                } else if (job.status === 'error') {
+                    clearInterval(pollInterval);
+                    showError(job.error || 'Translation failed');
+                }
+
+            } catch (err) {
+                console.error('Poll error:', err);
+            }
+        }
+
+        function updateProgress(pct, label, detail) {
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('progressPct').textContent = pct + '%';
+            document.getElementById('progressLabel').textContent = label;
+            document.getElementById('progressDetail').textContent = detail;
+        }
+
+        function showSuccess(job) {
+            const btn = document.getElementById('translateBtn');
+            btn.classList.remove('loading');
+
+            document.getElementById('progressSection').classList.remove('active');
+            document.getElementById('resultSection').classList.add('active');
+
+            const card = document.getElementById('resultCard');
+            card.classList.remove('error');
+
+            document.getElementById('resultTitle').textContent = 'Translation Complete';
+            document.getElementById('resultDetail').textContent =
+                `${selectedFile.name} → ${document.getElementById('targetLang').selectedOptions[0].text}`;
+
+            document.getElementById('statSlides').textContent = job.total_slides;
+            document.getElementById('statTexts').textContent = job.translated_texts;
+            document.getElementById('statTime').textContent = job.elapsed + 's';
+            document.getElementById('resultStats').style.display = 'flex';
+
+            const dlBtn = document.getElementById('downloadBtn');
+            dlBtn.href = `${API_BASE}${job.download_url}`;
+            dlBtn.download = job.output_filename || 'translated.pptx';
+            dlBtn.style.display = 'inline-flex';
+        }
+
+        function showError(msg) {
+            const btn = document.getElementById('translateBtn');
+            btn.disabled = false;
+            btn.classList.remove('loading');
+
+            document.getElementById('progressSection').classList.remove('active');
+            document.getElementById('resultSection').classList.add('active');
+
+            const card = document.getElementById('resultCard');
+            card.classList.add('error');
+
+            document.getElementById('resultTitle').textContent = 'Translation Failed';
+            document.getElementById('resultDetail').textContent = msg;
+            document.getElementById('resultStats').style.display = 'none';
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('resultCard').querySelector('.result-icon svg').setAttribute('stroke', '#DE350B');
+            document.getElementById('resultCard').querySelector('.result-icon svg').innerHTML =
+                '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+        }
+
+        function resetUI() {
+            removeFile();
+            document.getElementById('progressSection').classList.remove('active');
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('translateBtn').disabled = true;
+
+            // Reset result card visuals
+            const icon = document.getElementById('resultCard').querySelector('.result-icon svg');
+            icon.setAttribute('stroke', '#00875A');
+            icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+
+            currentJobId = null;
+        }
+
+        // ── Health Check ──
+        async function checkHealth() {
+            const badge = document.getElementById('healthBadge');
+            const text = document.getElementById('healthText');
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/health`);
+                const data = await resp.json();
+
+                if (data.vllm === 'healthy') {
+                    badge.className = 'health-badge ok';
+                    text.textContent = 'vLLM Online';
+                } else {
+                    badge.className = 'health-badge err';
+                    text.textContent = 'vLLM Offline';
+                }
+            } catch (err) {
+                badge.className = 'health-badge err';
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        // Initial health check and periodic refresh
+        checkHealth();
+        setInterval(checkHealth, 15000);
+    </script>
+</body>
+</html>
