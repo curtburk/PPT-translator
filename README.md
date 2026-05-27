@@ -1,5 +1,8 @@
 # PPT Translator - On-Prem Presentation Translation
 
+![Dashboard screenshot](translation-tool.png)
+
+
 Translate PowerPoint presentations into 28+ languages using on-prem AI on the HP ZGX Nano. Upload a `.pptx`, pick a target language, download the translated deck - all formatting, images, layouts, grouped shapes, and tables preserved. Zero cloud. Zero data leakage.
 
 ## What It Does
