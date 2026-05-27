@@ -1,15 +1,15 @@
 # PPT Translator - On-Prem Presentation Translation
 
-Translate PowerPoint presentations into 28+ languages using on-prem AI on the HP ZGX Nano. Upload a `.pptx`, pick a target language, download the translated deck — all formatting, images, layouts, grouped shapes, and tables preserved. Zero cloud. Zero data leakage.
+Translate PowerPoint presentations into 28+ languages using on-prem AI on the HP ZGX Nano. Upload a `.pptx`, pick a target language, download the translated deck - all formatting, images, layouts, grouped shapes, and tables preserved. Zero cloud. Zero data leakage.
 
 ## What It Does
 
 1. **Upload** a `.pptx` file through the web UI
 2. **Select** source and target languages (28 languages supported)
-3. **Translate** — the LLM translates all text content slide-by-slide
+3. **Translate** - the LLM translates all text content slide-by-slide
 4. **Download** the translated `.pptx` with original formatting intact
 
-Text is translated at the shape level using an LLM (Qwen3.6-35B-A3B via vLLM), which produces significantly better translations than small seq2seq models — especially for corporate training materials with domain-specific terminology. A 10-slide customer briefing deck translates in roughly 75 seconds.
+Text is translated at the shape level using an LLM (Qwen3.6-35B-A3B via vLLM), which produces significantly better translations than small seq2seq models - especially for corporate training materials with domain-specific terminology. A 10-slide customer briefing deck translates in roughly 75 seconds.
 
 ## Architecture
 
@@ -25,12 +25,12 @@ Text is translated at the shape level using an LLM (Qwen3.6-35B-A3B via vLLM), w
 ```
 
 **Key design decisions:**
-- **Fully containerized** — `docker compose up` and you're running, no dependency resolution
+- **Fully containerized** - `docker compose up` and you're running, no dependency resolution
 - **python-pptx** for reading/writing PPTX (preserves all formatting, images, charts, layouts)
-- **Recursive shape traversal** — descends into group shapes, SmartArt-style layouts, and nested containers so no text is missed
-- **LLM translation** over small translation models — much better quality for corporate/technical content
-- **Slide-by-slide batching** — each slide's text blocks translated in a single LLM call for context coherence
-- **Async job processing** — upload returns immediately, frontend polls for progress
+- **Recursive shape traversal** - descends into group shapes, SmartArt-style layouts, and nested containers so no text is missed
+- **LLM translation** over small translation models - much better quality for corporate/technical content
+- **Slide-by-slide batching** - each slide's text blocks translated in a single LLM call for context coherence
+- **Async job processing** - upload returns immediately, frontend polls for progress
 
 ## Quick Start
 
@@ -84,7 +84,7 @@ The vLLM service is behind a Docker Compose profile. If you already have a vLLM 
 |----------|---------|-------------|
 | `HF_CACHE` | `$HOME/.cache/huggingface` | HuggingFace model cache path |
 | `HF_TOKEN` | *(empty)* | HuggingFace token for gated models |
-| `VLLM_URL` | `http://172.17.0.1:8091` | vLLM endpoint (defaults to Docker bridge gateway) |
+| `VLLM_URL` | `http://172.xx.x.x:8091` | vLLM endpoint (defaults to Docker bridge gateway) |
 | `VLLM_MODEL` | `Qwen/Qwen3.6-35B-A3B` | Model name for API calls |
 
 ## Supported Languages
