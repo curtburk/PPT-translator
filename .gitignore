@@ -1,0 +1,11 @@
+# Runtime directories
+uploads/
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
