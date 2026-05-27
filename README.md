@@ -1,6 +1,6 @@
-# PPT Translator — On-Prem Presentation Translation
+# PPT Translator - On-Prem Presentation Translation
 
-Translate PowerPoint presentations into 28+ languages using on-prem AI on the HP ZGX Nano. Upload a `.pptx`, pick a target language, download the translated deck — all formatting, images, and layouts preserved. Zero cloud. Zero data leakage.
+Translate PowerPoint presentations into 28+ languages using on-prem AI on the HP ZGX Nano. Upload a `.pptx`, pick a target language, download the translated deck — all formatting, images, layouts, grouped shapes, and tables preserved. Zero cloud. Zero data leakage.
 
 ## What It Does
 
@@ -9,7 +9,7 @@ Translate PowerPoint presentations into 28+ languages using on-prem AI on the HP
 3. **Translate** — the LLM translates all text content slide-by-slide
 4. **Download** the translated `.pptx` with original formatting intact
 
-Text is translated at the shape level using an LLM (Qwen3.6-35B-A3B via vLLM), which produces significantly better translations than small seq2seq models — especially for corporate training materials with domain-specific terminology.
+Text is translated at the shape level using an LLM (Qwen3.6-35B-A3B via vLLM), which produces significantly better translations than small seq2seq models — especially for corporate training materials with domain-specific terminology. A 10-slide customer briefing deck translates in roughly 75 seconds.
 
 ## Architecture
 
@@ -27,20 +27,28 @@ Text is translated at the shape level using an LLM (Qwen3.6-35B-A3B via vLLM), w
 **Key design decisions:**
 - **Fully containerized** — `docker compose up` and you're running, no dependency resolution
 - **python-pptx** for reading/writing PPTX (preserves all formatting, images, charts, layouts)
+- **Recursive shape traversal** — descends into group shapes, SmartArt-style layouts, and nested containers so no text is missed
 - **LLM translation** over small translation models — much better quality for corporate/technical content
 - **Slide-by-slide batching** — each slide's text blocks translated in a single LLM call for context coherence
 - **Async job processing** — upload returns immediately, frontend polls for progress
 
 ## Quick Start
 
-### 1. Download models (first time only)
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/curtburk/PPT-translator.git
+cd PPT-translator
+```
+
+### 2. Download models (first time only)
 
 ```bash
 chmod +x download_models.sh
 ./download_models.sh
 ```
 
-### 2. Start everything
+### 3. Start everything
 
 ```bash
 chmod +x start.sh
@@ -66,9 +74,9 @@ docker compose stop app
 | Container | Image | Port | Purpose |
 |-----------|-------|------|---------|
 | `ppt-translator-app` | Built from `Dockerfile` | 8092 | FastAPI web app + python-pptx |
-| `ppt-translator-vllm` | `nvcr.io/nvidia/vllm:26.01-py3` | 8091 | LLM inference |
+| `ppt-translator-vllm` | `nvcr.io/nvidia/vllm:26.01-py3` | 8091 | LLM inference (optional, uses profile) |
 
-If you already have a vLLM instance on port 8091 (e.g., shared across demos), the start script detects it and only launches the app container.
+The vLLM service is behind a Docker Compose profile. If you already have a vLLM instance on port 8091 (e.g., shared across demos), the start script detects it and only launches the app container. To explicitly start vLLM through this project, use `docker compose --profile vllm up -d`.
 
 ## Environment Variables
 
@@ -76,7 +84,7 @@ If you already have a vLLM instance on port 8091 (e.g., shared across demos), th
 |----------|---------|-------------|
 | `HF_CACHE` | `$HOME/.cache/huggingface` | HuggingFace model cache path |
 | `HF_TOKEN` | *(empty)* | HuggingFace token for gated models |
-| `VLLM_URL` | `http://vllm:8000` | vLLM endpoint (inside compose network) |
+| `VLLM_URL` | `http://172.17.0.1:8091` | vLLM endpoint (defaults to Docker bridge gateway) |
 | `VLLM_MODEL` | `Qwen/Qwen3.6-35B-A3B` | Model name for API calls |
 
 ## Supported Languages
@@ -98,22 +106,24 @@ Arabic, Chinese (Simplified & Traditional), Czech, Danish, Dutch, Finnish, Frenc
 - **Compliance by Architecture**: training materials with sensitive company info never leave the device
 - **28 languages from one model**: no need to deploy separate translation models per language pair
 - **Formatting preserved**: unlike copy-paste-translate workflows, the output is a ready-to-distribute deck
+- **Handles complex slides**: grouped shapes, nested containers, tables, and multi-paragraph text frames are all translated in-place
 - **Cost story**: compare to per-document cloud translation API pricing at scale across a global workforce
-- **Speed**: a typical 15-slide deck translates in 30-60 seconds depending on text density
+- **Speed**: a 10-slide customer briefing deck translates in ~75 seconds on a single ZGX Nano
 
 ## File Structure
 
 ```
-ppt-translator/
+PPT-translator/
 ├── Dockerfile             # App container image
-├── docker-compose.yml     # vLLM + app orchestration
+├── docker-compose.yml     # vLLM (profiled) + app orchestration
 ├── server.py              # FastAPI backend
 ├── requirements.txt       # Python deps (installed inside container)
 ├── start.sh               # Launch script
 ├── download_models.sh     # Model download helper
 ├── templates/
 │   └── index.html         # Frontend UI
-├── static/                # Static assets
+├── static/
+│   └── hp_logo.png        # HP logo for the UI
 ├── uploads/               # Temp uploaded files (volume-mounted)
 └── output/                # Translated PPTX files (volume-mounted)
 ```
@@ -123,4 +133,12 @@ ppt-translator/
 This demo uses port **8092** for the web app, avoiding conflicts with:
 - 8090 (existing demos)
 - 8091 (vLLM inference)
-- 8888 (Deck Factory / SearXNG)
+- 8888 (SearXNG)
+
+## Firewall
+
+If accessing the UI from another machine on the LAN, ensure port 8092 is open:
+
+```bash
+sudo ufw allow 8092/tcp
+```
