@@ -11,7 +11,7 @@
         :root {
             --hp-blue: #0096D6;
             --hp-blue-dark: #006DA8;
-            --hp-blue-deep: #024AD8;
+            --hp-blue-deep: #004B7A;
             --hp-navy: #00234B;
             --surface: #F7F9FC;
             --surface-alt: #EEF2F8;
@@ -58,8 +58,15 @@
         .hp-logo {
             width: 40px;
             height: 40px;
+            background: var(--hp-blue);
             border-radius: 8px;
-            object-fit: contain;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+            letter-spacing: -0.5px;
         }
 
         .top-bar-title {
@@ -604,9 +611,9 @@
     <!-- Top Bar -->
     <div class="top-bar">
         <div class="top-bar-left">
-            <img src="/static/hp_logo.png" alt="HP" class="hp-logo">
+            <div class="hp-logo">hp</div>
             <div>
-                <div class="top-bar-title">HP Powerpoint Translator</div>
+                <div class="top-bar-title">PPT Translator</div>
                 <div class="top-bar-subtitle">ZGX Nano · On-Prem AI</div>
             </div>
         </div>
@@ -778,9 +785,9 @@
     <script>
         // ── Config ──
         const API_BASE = window.location.origin;
-        let selectedFile = null;
-        let currentJobId = null;
-        let pollInterval = null;
+        var selectedFile = null;
+        var currentJobId = null;
+        var pollInterval = null;
 
         // ── Dropzone ──
         const dropzone = document.getElementById('dropzone');
